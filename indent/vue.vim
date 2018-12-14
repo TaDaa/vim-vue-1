@@ -2,13 +2,19 @@ if exists('b:did_indent')
   finish
 endif
 
-let s:languages = ['html', 'pug', 'javascript', 'css', 'scss', 'stylus']
+let s:languages = ['html', 'pug', 'javascript', 'css', 'scss', 'stylus', 'typescript', 'coffee']
 let s:indentexpr = {}
 
 for s:language in s:languages
   unlet! b:did_indent
 
-  execute 'runtime! indent/' . s:language . '.vim'
+  let path = ''
+  if exists('g:vim_vue_indent_paths') && has_key(g:vim_vue_indent_paths, s:language)
+    let path = g:vim_vue_indent_paths[s:language]
+  else
+    let path = 'indent/' . s:language . '.vim'
+  endif
+  execute 'runtime! ' .path
 
   let s:indentexpr[s:language] = &indentexpr
 endfor
@@ -23,6 +29,7 @@ if exists("*vue#GetVueIndent")
 endif
 
 function! vue#GetVueIndent()
+  let g:last_indentexpr = vue#IndentifySyntaxRegion()
   execute 'let l:indent = ' . get(s:indentexpr, vue#IdentifySyntaxRegion())
 
   return l:indent
